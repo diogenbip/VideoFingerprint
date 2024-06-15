@@ -5,20 +5,16 @@ class MinHash:
   def __init__(self, num_perm):
     self.permutations = self._permutations_generate(num_perm)
   
-  def _permutations_generate(self, num_perm)->list:
-    permutations = []
-    count = 0
-    while count < num_perm:
-      perm = random.sample(range(0, 255), 100)
-      permutations.append(perm)
-      count += 1
+  def _permutations_generate(self, num_perm, seed=5421)->list:
+    np.random.seed(seed)
+    permutations = [np.random.choice( 255, 100,replace=False) for _ in range(num_perm)]
     return permutations
       
   def hash(self,array)->list:
     signature = []
     for permutation in self.permutations:
       for j in permutation:
-        if(array[j] == 1):
+        if(array[j] > 0):
           signature.append(j)
           break
     return signature
@@ -60,11 +56,24 @@ class LSH:
                 if jac >= self._threshold:
                   return (sketch_to_check[0],sketch_to_check[1],sketch_to_check[2], jac)
                 compared_sketches.add(check_key)
-        if add_to_bucket:
+        if add_to_bucket and len(min_hashes) == self._num_hash_functions:
           for i in range(self._bands):
             if band_hashes[i] not in self._buckets:
               self._buckets[band_hashes[i]] = []
             self._buckets[band_hashes[i]].append((min_hashes, name, time))
+            
+    def add(self, fingerprints, name, time):
+        min_hashes = self._min_hash.hash(fingerprints)
+        band_hashes = []
+        
+        if(len(min_hashes) != self._num_hash_functions):
+          return None
+        
+        for i in range(self._bands):
+          band_hashes.append(self._compute_band_hash(min_hashes, i))
+          if band_hashes[i] not in self._buckets:
+            self._buckets[band_hashes[i]] = []
+          self._buckets[band_hashes[i]].append((min_hashes, name, time))
           
     def _compute_band_hash(self, min_hashes: list, i: int) -> str:
         """Compute a hash for quick bucket match search."""
