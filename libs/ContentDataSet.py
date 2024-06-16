@@ -128,8 +128,7 @@ class Content:
 
 def process_video(name,file_path, frame_size=(256, 144), target_sr=5512,nfft=2048, hop=64)->Tuple[str,list,list,np.ndarray]:
   video_name = os.path.join(file_path, name)
-  video_clip = VideoFileClip(video_name).fx(blackwhite).resize(frame_size)
-  
+  video_clip = VideoFileClip(video_name,audio=True,target_resolution=(frame_size[0],frame_size[1])).fx(blackwhite) 
   
   audio_clip = video_clip.audio
   sr = audio_clip.fps
