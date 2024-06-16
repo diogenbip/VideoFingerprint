@@ -28,7 +28,7 @@ class AudioHash:
   def getMinHash(self, band)->List[Tuple[str,str,str,int]]:
     conn = get_connection()
     sql = """
-    SELECT key, minhash, name, frame FROM audio_hash WHERE key in (%s)
+    SELECT key, minhash, name, frame FROM audio_hash WHERE key in %s
     """
     cur = conn.cursor()
     cur.execute(sql, (band,))
